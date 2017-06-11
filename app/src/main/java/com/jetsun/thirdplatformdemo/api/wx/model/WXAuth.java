@@ -4,7 +4,7 @@ package com.jetsun.thirdplatformdemo.api.wx.model;
  * Created by cai.jia on 2017/6/9 0009
  */
 
-public class WxAuthResult {
+public class WXAuth {
 
     /**
      * ERR_OK = 0(用户同意)
@@ -74,7 +74,7 @@ public class WxAuthResult {
         this.country = country;
     }
 
-    public WxAuthResult(int errorCode, String code, String state, String lang, String country) {
+    public WXAuth(int errorCode, String code, String state, String lang, String country) {
         this.errorCode = errorCode;
         this.code = code;
         this.state = state;
@@ -84,7 +84,7 @@ public class WxAuthResult {
 
     @Override
     public String toString() {
-        return "WxAuthResult{" +
+        return "WXAuth{" +
                 "errorCode=" + errorCode +
                 ", code='" + code + '\'' +
                 ", state='" + state + '\'' +

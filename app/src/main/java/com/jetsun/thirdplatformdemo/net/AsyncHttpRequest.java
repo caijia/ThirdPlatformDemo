@@ -28,7 +28,7 @@ public class AsyncHttpRequest implements Callable<Boolean> {
             String rsp = request.request(url, params);
             rspHandler.onSuccess(rsp);
         } catch (Exception e) {
-            rspHandler.onFailure("error");
+            rspHandler.onFailure(e.getMessage());
         }
         return true;
     }

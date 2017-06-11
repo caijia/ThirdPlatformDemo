@@ -7,7 +7,7 @@ import org.json.JSONObject;
  * Created by cai.jia on 2017/6/9 0009
  */
 
-public class WxUserInfo {
+public class WXUserInfo {
 
     public static final String MAN = "1";
     public static final String WOMAN = "2";
@@ -46,8 +46,8 @@ public class WxUserInfo {
      */
     private String unionid;
 
-    public static WxUserInfo fromJson(String json) {
-        WxUserInfo info = new WxUserInfo();
+    public static WXUserInfo fromJson(String json) {
+        WXUserInfo info = new WXUserInfo();
         try {
             JSONObject jo = new JSONObject(json);
             String openId = jo.optString("openid");
@@ -155,7 +155,7 @@ public class WxUserInfo {
 
     @Override
     public String toString() {
-        return "WxUserInfo{" +
+        return "WXUserInfo{" +
                 "openid='" + openid + '\'' +
                 ", nickname='" + nickname + '\'' +
                 ", sex='" + sex + '\'' +

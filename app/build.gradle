@@ -43,4 +43,5 @@ dependencies {
     releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
     testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
     testCompile 'junit:junit:4.12'
+    compile files('libs/open_sdk_r5788_lite.jar')
 }
