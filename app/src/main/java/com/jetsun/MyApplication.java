@@ -2,8 +2,8 @@ package com.jetsun;
 
 import android.app.Application;
 
-import com.jetsun.thirdplatformdemo.api.qq.QQApiHelper;
-import com.jetsun.thirdplatformdemo.api.wx.WXApiHelper;
+import com.jetsun.thirdPlatform.Platform;
+import com.jetsun.thirdPlatform.api.PlatformManager;
 import com.squareup.leakcanary.LeakCanary;
 
 /**
@@ -21,14 +21,14 @@ public class MyApplication extends Application{
             return;
         }
         LeakCanary.install(this);
-        WXApiHelper.getInstance().init(this, Constants.WX_APP_ID, Constants.WX_SECRET, true);
-        QQApiHelper.getInstance().init(this, Constants.QQ_APP_ID, Constants.QQ_SECRET, true);
+        PlatformManager.getInstance().init(Platform.WX,this, Constants.WX_APP_ID, Constants.WX_SECRET);
+        PlatformManager.getInstance().init(Platform.QQ,this, Constants.QQ_APP_ID, Constants.QQ_SECRET);
+        PlatformManager.getInstance().init(Platform.SINA,this, Constants.SINA_APP_ID, Constants.SINA_SECRET);
     }
 
     @Override
     public void onTerminate() {
-        WXApiHelper.getInstance().destroy(this);
-        QQApiHelper.getInstance().destroy(this);
+        PlatformManager.getInstance().destroy(this);
         super.onTerminate();
     }
 }
