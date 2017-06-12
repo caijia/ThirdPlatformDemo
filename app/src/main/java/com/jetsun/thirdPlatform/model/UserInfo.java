@@ -14,6 +14,7 @@ public class UserInfo {
     private String genderStr;
     private String nickName;
     private String imageUrl;
+    private String unionid;
 
     public static UserInfo fromJson(String json, UserInfoParser parser) {
         return parser.fromJson(json);
@@ -58,6 +59,14 @@ public class UserInfo {
         this.genderStr = genderStr;
     }
 
+    public String getUnionid() {
+        return unionid;
+    }
+
+    public void setUnionid(String unionid) {
+        this.unionid = unionid;
+    }
+
     @Override
     public String toString() {
         return "UserInfo{" +
@@ -65,6 +74,7 @@ public class UserInfo {
                 ", genderStr='" + genderStr + '\'' +
                 ", nickName='" + nickName + '\'' +
                 ", imageUrl='" + imageUrl + '\'' +
+                ", unionid='" + unionid + '\'' +
                 '}';
     }
 }

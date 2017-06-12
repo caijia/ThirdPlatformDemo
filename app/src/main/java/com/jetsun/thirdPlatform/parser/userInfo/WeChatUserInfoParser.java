@@ -24,6 +24,7 @@ public class WeChatUserInfoParser implements UserInfoParser {
             String imageUrl = jo.optString("headimgurl");
             String unionid = jo.optString("unionid");
             userInfo.setAll(genderInt, nickName, imageUrl);
+            userInfo.setUnionid(unionid);
         } catch (Exception e) {
             e.printStackTrace();
         }
