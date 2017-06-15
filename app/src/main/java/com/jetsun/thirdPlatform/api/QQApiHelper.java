@@ -185,4 +185,10 @@ class QQApiHelper implements PlatformApi {
             }
         };
     }
+
+    @Override
+    public void share(Context context, int type, String title, String desc, String imageUrl,
+                      String webUrl) {
+
+    }
 }

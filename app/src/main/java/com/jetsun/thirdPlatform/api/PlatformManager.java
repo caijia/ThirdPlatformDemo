@@ -90,4 +90,11 @@ public class PlatformManager {
     public @interface PlatformType {
 
     }
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({Platform.QQ, Platform.SINA, Platform.WX,Platform.WX_CIRCLE,Platform.WX_COLLECT,
+            Platform.QZONE})
+    public @interface ShareType{
+
+    }
 }

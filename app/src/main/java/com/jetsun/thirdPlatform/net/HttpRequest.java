@@ -1,5 +1,8 @@
 package com.jetsun.thirdPlatform.net;
 
+import android.content.Context;
+import android.support.annotation.Nullable;
+
 import java.util.Map;
 
 /**
@@ -8,5 +11,5 @@ import java.util.Map;
 
 public interface HttpRequest {
 
-    String request(String url, Map<String, Object> params) throws Exception;
+    String request(@Nullable Context context, String url, @Nullable Map<String, Object> params) throws Exception;
 }

@@ -1,7 +1,12 @@
 package com.jetsun.thirdPlatform.net;
 
+import android.content.Context;
+
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
@@ -73,5 +78,46 @@ public class HttpUtils {
             return out.toString();
         }
         return null;
+    }
+
+    public static String streamToFile(Context context,String fileName, InputStream inputStream) {
+        if (context == null) {
+            return "";
+        }
+
+        File cacheDir = context.getCacheDir();
+        File saveFile = new File(cacheDir, fileName);
+        BufferedOutputStream out = null;
+        BufferedInputStream in = null;
+        try {
+            out = new BufferedOutputStream(new FileOutputStream(saveFile));
+            in = new BufferedInputStream(inputStream);
+            int len ;
+            byte[] buffer = new byte[1024 * 8];
+            while ((len = in.read(buffer)) != -1) {
+                out.write(buffer, 0, len);
+            }
+        } catch (Exception e) {
+            return "";
+        }finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return saveFile.getAbsolutePath();
+    }
+
+    public static File getCacheImage(Context context, String url) {
+        File cacheDir = context.getCacheDir();
+        String fileName = MD5.getMD5(url) + ".jpg";
+        return new File(cacheDir, fileName);
     }
 }

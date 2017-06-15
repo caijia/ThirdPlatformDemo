@@ -34,4 +34,6 @@ public interface PlatformApi {
                      @NonNull OnUserInfoListener listener);
 
     void handleIntent(final Activity activity, Intent intent);
+
+    void share(Context context,int type, String title, String desc, String imageUrl, String webUrl);
 }

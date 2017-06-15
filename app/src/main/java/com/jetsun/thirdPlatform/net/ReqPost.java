@@ -1,5 +1,6 @@
 package com.jetsun.thirdPlatform.net;
 
+import android.content.Context;
 import android.text.TextUtils;
 
 import java.io.InputStream;
@@ -20,7 +21,7 @@ public class ReqPost implements HttpRequest {
     private static final int SUCCESS_CODE = 200;
 
     @Override
-    public String request(String url, Map<String, Object> params) throws Exception {
+    public String request(Context context,String url, Map<String, Object> params) throws Exception {
         HttpURLConnection conn = null;
         try {
             URL urlConn = new URL(url);

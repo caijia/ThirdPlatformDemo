@@ -13,15 +13,25 @@ import com.jetsun.thirdPlatform.event.OnAuthListener;
 import com.jetsun.thirdPlatform.event.OnUserInfoListener;
 import com.jetsun.thirdPlatform.model.AuthResult;
 import com.jetsun.thirdPlatform.model.UserInfo;
+import com.jetsun.thirdPlatform.net.BitmapUtil;
+import com.jetsun.thirdPlatform.net.HttpUtils;
 import com.jetsun.thirdPlatform.net.RspHandler;
+import com.jetsun.thirdPlatform.net.SimpleHttpClient;
 import com.jetsun.thirdPlatform.parser.authResult.WeChatAuthParser;
 import com.jetsun.thirdPlatform.parser.userInfo.WeChatUserInfoParser;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
 import com.tencent.mm.opensdk.modelbase.BaseResp;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
+import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
+import com.tencent.mm.opensdk.modelmsg.WXMediaMessage;
+import com.tencent.mm.opensdk.modelmsg.WXWebpageObject;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
+
+import java.io.File;
+
+import static com.jetsun.thirdPlatform.net.BitmapUtil.bitmapToByte;
 
 /**
  * 微信：https://open.weixin.qq.com/cgi-bin/showdocument?action=dir_list&t=resource/res_list&verify=1&id=1417751808&token=&lang=zh_CN
@@ -199,5 +209,62 @@ class WXApiHelper implements PlatformApi {
         checkInit();
         String realScope = TextUtils.isEmpty(scope) ? SCOPE_USER_INFO : scope;
         getCode(realScope, onAuthListener);
+    }
+
+    public static final int MAX_SIZE = 32 * 1024;
+
+    public void share(Context context,int type,String title, String des, String image, String targetUrl) {
+        if (!iwxapi.isWXAppInstalled()) {
+            return;
+        }
+        WXWebpageObject webPage = new WXWebpageObject();
+        webPage.webpageUrl = targetUrl;
+        final WXMediaMessage msg = new WXMediaMessage(webPage);
+        msg.title = title;
+        msg.description = des;
+
+        File file = HttpUtils.getCacheImage(context,image);
+        boolean hasCache = false;
+        if (file != null && file.exists()) {
+            hasCache = true;
+            setImageByte(msg, file);
+        }
+
+        if (!hasCache) {
+            SimpleHttpClient.getInstance().downloadImage(context,image,new RspHandler(){
+                @Override
+                public void onSuccess(String s) {
+                    File saveFile = new File(s);
+                    setImageByte(msg, saveFile);
+                }
+            });
+        }
+        sendToWX(msg, type);
+    }
+
+    private void setImageByte(WXMediaMessage msg,File file) {
+        final int imageSize = 120;
+        byte[] bytes = bitmapToByte(file, imageSize, imageSize);
+        if (bytes.length <= MAX_SIZE) {
+            msg.thumbData = bytes;
+
+        } else {
+            int i = bytes.length / MAX_SIZE;
+            msg.thumbData =  BitmapUtil.bitmapToByte(file, imageSize, imageSize, 100 / i);
+        }
+    }
+
+    private void sendToWX(WXMediaMessage msg,int type) {
+        if (msg == null || iwxapi == null) {
+            return;
+        }
+        // 构造一个Req
+        SendMessageToWX.Req req = new SendMessageToWX.Req();
+        req.transaction = System.currentTimeMillis() + ""; // transaction字段用于唯一标识一个请求
+        req.message = msg;
+        req.scene = type;
+
+        // 调用api接口发送数据到微信
+        iwxapi.sendReq(req);
     }
 }

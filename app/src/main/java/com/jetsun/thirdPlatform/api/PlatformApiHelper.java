@@ -1,11 +1,13 @@
 package com.jetsun.thirdPlatform.api;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
+import com.jetsun.thirdPlatform.Platform;
 import com.jetsun.thirdPlatform.event.OnAuthListener;
 import com.jetsun.thirdPlatform.event.OnUserInfoListener;
 
@@ -62,5 +64,16 @@ public class PlatformApiHelper {
 
     public void handleIntent(Activity activity, Intent intent) {
         PlatformManager.getInstance().handleIntent(activity, intent);
+    }
+
+    public void share(Context context,@PlatformManager.ShareType int shareType, String title,
+                      String desc, String imageUrl, String webUrl) {
+        switch (shareType) {
+            case Platform.WX:
+            case Platform.WX_CIRCLE:
+            case Platform.WX_COLLECT:{
+                getPlatform(Platform.WX).share(context, shareType, title, desc, imageUrl, webUrl);
+            }
+        }
     }
 }

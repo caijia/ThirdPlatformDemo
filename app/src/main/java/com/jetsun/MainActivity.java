@@ -41,7 +41,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.wx_login_btn: {
-                wxLogin();
+//                wxLogin();
+                PlatformApiHelper.getInstance().share(this,Platform.WX_CIRCLE,"title","desc",
+                        "http://imgsrc.baidu.com/imgad/pic/item/caef76094b36acaf0accebde76d98d1001e99ce7.jpg","https://www.baidu.com");
                 break;
             }
 
