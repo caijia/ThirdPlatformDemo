@@ -10,6 +10,7 @@ import android.widget.TextView;
 import com.jetsun.thirdPlatform.Platform;
 import com.jetsun.thirdPlatform.api.PlatformApiHelper;
 import com.jetsun.thirdPlatform.api.PlatformManager;
+import com.jetsun.thirdPlatform.event.OnShareListener;
 import com.jetsun.thirdPlatform.event.OnUserInfoListener;
 import com.jetsun.thirdPlatform.model.AuthResult;
 import com.jetsun.thirdPlatform.model.UserInfo;
@@ -18,8 +19,10 @@ import com.jetsun.thirdPlatform.model.UserInfo;
  * 微信：https://open.weixin.qq.com/cgi-bin/showdocument?action=dir_list&t=resource/res_list&verify=1&id=1417751808&token=&lang=zh_CN
  * QQ:  http://wiki.open.qq.com/wiki/mobile/SDK%E4%B8%8B%E8%BD%BD
  */
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, OnUserInfoListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, OnUserInfoListener, OnShareListener {
 
+    private static final String IMAGE_URL = "http://pic28.nipic.com/20130424/11588775_115415688157_2.jpg";
+    private static final String TARGET_URL = "https://www.6383.com";
     private TextView infoTv;
 
     @Override
@@ -31,9 +34,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button qqLoginBtn = (Button) findViewById(R.id.qq_login_btn);
         Button sinaLoginBtn = (Button) findViewById(R.id.sina_login_btn);
 
+        Button wxShareBtn = (Button) findViewById(R.id.wx_share_btn);
+        Button wxCircleShareBtan = (Button) findViewById(R.id.wx_circle_share_btn);
+        Button wxCollectShareBtn = (Button) findViewById(R.id.wx_collect_share_btn);
+        Button qqShareBtn = (Button) findViewById(R.id.qq_share_btn);
+        Button qZoneShareBtn = (Button) findViewById(R.id.qzone_share_btn);
+        Button sinaShareBtn = (Button) findViewById(R.id.sina_share_btn);
+
         wxLoginBtn.setOnClickListener(this);
         qqLoginBtn.setOnClickListener(this);
         sinaLoginBtn.setOnClickListener(this);
+
+        wxShareBtn.setOnClickListener(this);
+        wxCircleShareBtan.setOnClickListener(this);
+        wxCollectShareBtn.setOnClickListener(this);
+        qqShareBtn.setOnClickListener(this);
+        qZoneShareBtn.setOnClickListener(this);
+        sinaShareBtn.setOnClickListener(this);
 
     }
 
@@ -41,30 +58,56 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.wx_login_btn: {
-//                wxLogin();
-                PlatformApiHelper.getInstance().share(this,Platform.WX_CIRCLE,"title","desc",
-                        "http://imgsrc.baidu.com/imgad/pic/item/caef76094b36acaf0accebde76d98d1001e99ce7.jpg","https://www.baidu.com");
+                PlatformApiHelper.getInstance().getUserInfo(Platform.WX, this, null, this);
                 break;
             }
 
             case R.id.qq_login_btn: {
-                qqLogin();
+                PlatformApiHelper.getInstance().getUserInfo(Platform.QQ, this, null, this);
                 break;
             }
 
             case R.id.sina_login_btn: {
-                sinaLogin();
+                PlatformApiHelper.getInstance().getUserInfo(Platform.SINA, this, null, this);
+                break;
+            }
+
+            case R.id.wx_share_btn: {
+                PlatformApiHelper.getInstance().share(this, Platform.WX, "title", "desc",
+                        IMAGE_URL, TARGET_URL, this);
+                break;
+            }
+
+            case R.id.wx_circle_share_btn: {
+                PlatformApiHelper.getInstance().share(this, Platform.WX_CIRCLE, "好波通", "好波通好波通",
+                        IMAGE_URL, TARGET_URL, this);
+                break;
+            }
+
+            case R.id.wx_collect_share_btn: {
+                PlatformApiHelper.getInstance().share(this, Platform.WX_COLLECT, "title", "desc",
+                        IMAGE_URL, TARGET_URL, this);
+                break;
+            }
+
+            case R.id.qq_share_btn: {
+                PlatformApiHelper.getInstance().share(this, Platform.QQ, "title", "desc",
+                        IMAGE_URL, TARGET_URL, this);
+                break;
+            }
+
+            case R.id.qzone_share_btn: {
+                PlatformApiHelper.getInstance().share(this, Platform.QZONE, "title", "desc",
+                        IMAGE_URL, TARGET_URL, this);
+                break;
+            }
+
+            case R.id.sina_share_btn: {
+                PlatformApiHelper.getInstance().share(this, Platform.SINA, "title", "desc",
+                        IMAGE_URL, TARGET_URL, this);
                 break;
             }
         }
-    }
-
-    private void sinaLogin() {
-        PlatformApiHelper.getInstance().getUserInfo(Platform.SINA, this, null, this);
-    }
-
-    private void qqLogin() {
-        PlatformApiHelper.getInstance().getUserInfo(Platform.QQ, this, null, this);
     }
 
     @Override
@@ -74,14 +117,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        PlatformApiHelper.getInstance().handleIntent(this, intent);
+        super.onNewIntent(intent);
+    }
+
+    @Override
     protected void onDestroy() {
         //防止内存泄漏
         PlatformManager.getInstance().destroy(this);
         super.onDestroy();
-    }
-
-    private void wxLogin() {
-        PlatformApiHelper.getInstance().getUserInfo(Platform.WX, this, null, this);
     }
 
     @Override
@@ -100,5 +145,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String info = String.format("platform = %s--userInfo=%s--authResult=%s", platform + "",
                 result.toString(), authResult.toString());
         infoTv.setText(info);
+    }
+
+    @Override
+    public void onShareSuccess(int platform) {
+        infoTv.setText("分享成功" + platform);
+    }
+
+    @Override
+    public void onShareError(int platform) {
+        infoTv.setText("分享失败" + platform);
     }
 }

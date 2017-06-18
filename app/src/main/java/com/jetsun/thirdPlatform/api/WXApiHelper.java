@@ -7,14 +7,15 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.util.TypedValue;
 
 import com.jetsun.thirdPlatform.Platform;
 import com.jetsun.thirdPlatform.event.OnAuthListener;
+import com.jetsun.thirdPlatform.event.OnShareListener;
 import com.jetsun.thirdPlatform.event.OnUserInfoListener;
 import com.jetsun.thirdPlatform.model.AuthResult;
 import com.jetsun.thirdPlatform.model.UserInfo;
 import com.jetsun.thirdPlatform.net.BitmapUtil;
-import com.jetsun.thirdPlatform.net.HttpUtils;
 import com.jetsun.thirdPlatform.net.RspHandler;
 import com.jetsun.thirdPlatform.net.SimpleHttpClient;
 import com.jetsun.thirdPlatform.parser.authResult.WeChatAuthParser;
@@ -30,8 +31,12 @@ import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
 import java.io.File;
+import java.util.UUID;
 
 import static com.jetsun.thirdPlatform.net.BitmapUtil.bitmapToByte;
+import static com.tencent.mm.opensdk.modelmsg.SendMessageToWX.Req.WXSceneFavorite;
+import static com.tencent.mm.opensdk.modelmsg.SendMessageToWX.Req.WXSceneSession;
+import static com.tencent.mm.opensdk.modelmsg.SendMessageToWX.Req.WXSceneTimeline;
 
 /**
  * 微信：https://open.weixin.qq.com/cgi-bin/showdocument?action=dir_list&t=resource/res_list&verify=1&id=1417751808&token=&lang=zh_CN
@@ -40,6 +45,7 @@ import static com.jetsun.thirdPlatform.net.BitmapUtil.bitmapToByte;
 
 class WXApiHelper implements PlatformApi {
 
+    private static final int MAX_SIZE = 32 * 1024;
     private static final String SCOPE_USER_INFO = "snsapi_userinfo";
     private static volatile WXApiHelper instance;
     private String appId;
@@ -80,6 +86,7 @@ class WXApiHelper implements PlatformApi {
     @Override
     public void destroy(Context context) {
         authRspListener = null;
+        onShareListener = null;
     }
 
     @Override
@@ -93,33 +100,49 @@ class WXApiHelper implements PlatformApi {
 
             @Override
             public void onResp(BaseResp baseResp) {
-                final SendAuth.Resp resp = (SendAuth.Resp) baseResp;
-                switch (resp.errCode) {
-                    case SendAuth.Resp.ErrCode.ERR_OK: {
-                        if (authRspListener != null) {
-                            httpApi.getWxToken(resp.code,appId,appSecret,new RspHandler(){
-                                @Override
-                                public void onSuccess(String s) {
-                                    AuthResult result = AuthResult.fromJson(s, new WeChatAuthParser());
-                                    authRspListener.onAuthComplete(Platform.WX,result);
-                                }
+                if (baseResp instanceof SendAuth.Resp) {
+                    final SendAuth.Resp resp = (SendAuth.Resp) baseResp;
+                    switch (resp.errCode) {
+                        case SendAuth.Resp.ErrCode.ERR_OK: {
+                            if (authRspListener != null) {
+                                httpApi.getWxToken(resp.code, appId, appSecret, new RspHandler() {
+                                    @Override
+                                    public void onSuccess(String s) {
+                                        AuthResult result = AuthResult.fromJson(s, new WeChatAuthParser());
+                                        authRspListener.onAuthComplete(Platform.WX, result);
+                                    }
 
-                                @Override
-                                public void onFailure(String s) {
-                                    authRspListener.onAuthError(Platform.WX);
-                                }
-                            });
+                                    @Override
+                                    public void onFailure(String s) {
+                                        authRspListener.onAuthError(Platform.WX);
+                                    }
+                                });
+                            }
+                            break;
                         }
-                        break;
+
+                        default: {
+                            if (authRspListener != null) {
+                                authRspListener.onAuthError(Platform.WX);
+                            }
+                        }
                     }
 
-                    default: {
-                        if (authRspListener != null) {
-                            authRspListener.onAuthError(Platform.WX);
+                } else if (baseResp instanceof SendMessageToWX.Resp) {
+                    SendMessageToWX.Resp resp = (SendMessageToWX.Resp) baseResp;
+                    String type = resp.transaction.substring(resp.transaction.lastIndexOf("/") + 1);
+                    int typeInt = Integer.parseInt(type);
+                    if (resp.errCode == SendMessageToWX.Resp.ErrCode.ERR_OK) {
+                        if (onShareListener != null) {
+                            onShareListener.onShareSuccess(typeInt);
+                        }
+
+                    }else{
+                        if (onShareListener != null) {
+                            onShareListener.onShareSuccess(typeInt);
                         }
                     }
                 }
-
                 activity.finish();
             }
         });
@@ -129,8 +152,7 @@ class WXApiHelper implements PlatformApi {
         checkInit();
         this.authRspListener = onRspListener;
         SendAuth.Req req = new SendAuth.Req();
-        String realScope = TextUtils.isEmpty(scope) ? SCOPE_USER_INFO : scope;
-        req.scope = realScope;
+        req.scope = TextUtils.isEmpty(scope) ? SCOPE_USER_INFO : scope;
         req.state = System.currentTimeMillis() + "";
         iwxapi.sendReq(req);
         if (onRspListener != null) {
@@ -154,7 +176,7 @@ class WXApiHelper implements PlatformApi {
             @Override
             public void onAuthComplete(final int platform, AuthResult result) {
                 httpApi.getUserInfo(result.getToken(), result.getOpenId(),
-                        createAndDispatchEvent(onRspListener,result));
+                        createAndDispatchEvent(onRspListener, result));
             }
         });
     }
@@ -165,7 +187,7 @@ class WXApiHelper implements PlatformApi {
             @Override
             public void onSuccess(String s) {
                 UserInfo userInfo = UserInfo.fromJson(s, new WeChatUserInfoParser());
-                listener.onUserInfoComplete(Platform.WX, userInfo,result);
+                listener.onUserInfoComplete(Platform.WX, userInfo, result);
             }
 
             @Override
@@ -176,13 +198,13 @@ class WXApiHelper implements PlatformApi {
     }
 
     @Override
-    public void getUserInfo(@NonNull Activity act,@Nullable String scope,
+    public void getUserInfo(@NonNull Activity act, @Nullable String scope,
                             @NonNull OnUserInfoListener onRspListener) {
         getUserInfo(scope, onRspListener);
     }
 
     @Override
-    public void getUserInfo(@NonNull Fragment f,@Nullable String scope,
+    public void getUserInfo(@NonNull Fragment f, @Nullable String scope,
                             @NonNull OnUserInfoListener onRspListener) {
         getUserInfo(scope, onRspListener);
     }
@@ -211,60 +233,98 @@ class WXApiHelper implements PlatformApi {
         getCode(realScope, onAuthListener);
     }
 
-    public static final int MAX_SIZE = 32 * 1024;
+    @Override
+    public void share(@NonNull Activity act, int type, String title, String desc, String imageUrl,
+                      String webUrl, @Nullable OnShareListener onShareListener) {
+        share(act, null, type, title, desc, imageUrl, webUrl, onShareListener);
+    }
 
-    public void share(Context context,int type,String title, String des, String image, String targetUrl) {
-        if (!iwxapi.isWXAppInstalled()) {
+    @Override
+    public void share(@NonNull Fragment f, int type, String title, String desc, String imageUrl,
+                      String webUrl, @Nullable OnShareListener onShareListener) {
+        share(null, f, type, title, desc, imageUrl, webUrl, onShareListener);
+    }
+
+    private OnShareListener onShareListener;
+
+    public void share(@Nullable Activity act, @Nullable Fragment f, final int type, String title,
+                      String des, String imageUrl, String targetUrl,
+                      @Nullable OnShareListener shareListener) {
+        final Activity a = act != null ? act : (f != null ? f.getActivity() : null);
+        if (a == null || a.isFinishing()) {
+            if (shareListener != null) {
+                shareListener.onShareError(type);
+            }
             return;
         }
+
+        if (!iwxapi.isWXAppInstalled()) {
+            if (shareListener != null) {
+                shareListener.onShareError(type);
+            }
+            return;
+        }
+
+        onShareListener = shareListener;
+
         WXWebpageObject webPage = new WXWebpageObject();
         webPage.webpageUrl = targetUrl;
         final WXMediaMessage msg = new WXMediaMessage(webPage);
         msg.title = title;
         msg.description = des;
 
-        File file = HttpUtils.getCacheImage(context,image);
-        boolean hasCache = false;
-        if (file != null && file.exists()) {
-            hasCache = true;
-            setImageByte(msg, file);
-        }
-
-        if (!hasCache) {
-            SimpleHttpClient.getInstance().downloadImage(context,image,new RspHandler(){
-                @Override
-                public void onSuccess(String s) {
-                    File saveFile = new File(s);
-                    setImageByte(msg, saveFile);
-                }
-            });
-        }
-        sendToWX(msg, type);
+        SimpleHttpClient.getInstance().downloadImage(a, imageUrl, new RspHandler() {
+            @Override
+            public void onSuccess(String s) {
+                File saveFile = new File(s);
+                setImageByte(a, msg, saveFile);
+                sendToWX(msg, type);
+            }
+        });
     }
 
-    private void setImageByte(WXMediaMessage msg,File file) {
-        final int imageSize = 120;
-        byte[] bytes = bitmapToByte(file, imageSize, imageSize);
+    private void setImageByte(Context context, WXMediaMessage msg, File file) {
+        final int imageSize = dpToPx(context, 48);
+        byte[] bytes = bitmapToByte(file, imageSize, imageSize, 100);
         if (bytes.length <= MAX_SIZE) {
             msg.thumbData = bytes;
 
         } else {
-            int i = bytes.length / MAX_SIZE;
-            msg.thumbData =  BitmapUtil.bitmapToByte(file, imageSize, imageSize, 100 / i);
+            int percent = (int) (MAX_SIZE / (bytes.length * 1f));
+            msg.thumbData = BitmapUtil.bitmapToByte(file, imageSize, imageSize, percent);
         }
     }
 
-    private void sendToWX(WXMediaMessage msg,int type) {
+    private void sendToWX(WXMediaMessage msg, int type) {
         if (msg == null || iwxapi == null) {
             return;
         }
         // 构造一个Req
         SendMessageToWX.Req req = new SendMessageToWX.Req();
-        req.transaction = System.currentTimeMillis() + ""; // transaction字段用于唯一标识一个请求
+        req.transaction = UUID.randomUUID().toString() + "/" + type; // transaction字段用于唯一标识一个请求,后面type只是方便回调时拿type值
         req.message = msg;
-        req.scene = type;
+        req.scene = getWxType(type);
 
         // 调用api接口发送数据到微信
         iwxapi.sendReq(req);
+    }
+
+    private int getWxType(int type) {
+        switch (type) {
+            case Platform.WX:
+                return WXSceneSession;
+
+            case Platform.WX_CIRCLE:
+                return WXSceneTimeline;
+
+            case Platform.WX_COLLECT:
+                return WXSceneFavorite;
+        }
+        return 0;
+    }
+
+    private int dpToPx(Context context, float dp) {
+        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
+                context.getResources().getDisplayMetrics()));
     }
 }

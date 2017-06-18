@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
 import com.jetsun.thirdPlatform.event.OnAuthListener;
+import com.jetsun.thirdPlatform.event.OnShareListener;
 import com.jetsun.thirdPlatform.event.OnUserInfoListener;
 
 /**
@@ -35,5 +36,9 @@ public interface PlatformApi {
 
     void handleIntent(final Activity activity, Intent intent);
 
-    void share(Context context,int type, String title, String desc, String imageUrl, String webUrl);
+    void share(@NonNull Activity act, int type, String title, String desc, String imageUrl,
+               String webUrl, @Nullable OnShareListener onShareListener);
+
+    void share(@NonNull Fragment f,int type, String title, String desc, String imageUrl,
+               String webUrl,@Nullable OnShareListener onShareListener);
 }

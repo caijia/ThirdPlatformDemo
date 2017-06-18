@@ -1,7 +1,6 @@
 package com.jetsun.thirdPlatform.api;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,6 +8,7 @@ import android.support.v4.app.Fragment;
 
 import com.jetsun.thirdPlatform.Platform;
 import com.jetsun.thirdPlatform.event.OnAuthListener;
+import com.jetsun.thirdPlatform.event.OnShareListener;
 import com.jetsun.thirdPlatform.event.OnUserInfoListener;
 
 /**
@@ -66,13 +66,29 @@ public class PlatformApiHelper {
         PlatformManager.getInstance().handleIntent(activity, intent);
     }
 
-    public void share(Context context,@PlatformManager.ShareType int shareType, String title,
-                      String desc, String imageUrl, String webUrl) {
+    public void share(@NonNull Activity act, @PlatformManager.ShareType int shareType, String title,
+                      String desc, String imageUrl, String webUrl,
+                      @Nullable OnShareListener onShareListener) {
         switch (shareType) {
             case Platform.WX:
             case Platform.WX_CIRCLE:
-            case Platform.WX_COLLECT:{
-                getPlatform(Platform.WX).share(context, shareType, title, desc, imageUrl, webUrl);
+            case Platform.WX_COLLECT: {
+                getPlatform(Platform.WX).share(act, shareType, title, desc, imageUrl, webUrl,
+                        onShareListener);
+                break;
+            }
+
+            case Platform.QQ:
+            case Platform.QZONE: {
+                getPlatform(Platform.QQ).share(act, shareType, title, desc, imageUrl, webUrl,
+                        onShareListener);
+                break;
+            }
+
+            case Platform.SINA:{
+                getPlatform(Platform.SINA).share(act, shareType, title, desc, imageUrl, webUrl,
+                        onShareListener);
+                break;
             }
         }
     }

@@ -3,7 +3,6 @@ package com.jetsun.thirdPlatform.net;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.util.Base64;
 
 import java.io.ByteArrayOutputStream;
@@ -65,18 +64,25 @@ public class BitmapUtil {
         return options;
     }
 
-    //把bitmap转换成String
-    public static String bitmapToString(String filePath, int width, int height) {
-        ByteArrayOutputStream baos = bitmapToStream(filePath, width, height);
-        byte[] b = baos.toByteArray();
-        return Base64.encodeToString(b, 0, b.length, Base64.DEFAULT);
-    }
-
     public static ByteArrayOutputStream bitmapToStream(String filePath, int width, int height) {
         Bitmap bm = getSmallBitmap(filePath, width, height);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bm.compress(Bitmap.CompressFormat.PNG, 100, baos);
-        return baos;
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.JPEG, 100, out);
+        return out;
+    }
+
+    public static ByteArrayOutputStream bitmapToStream(Context context, int resId, int width, int height) {
+        Bitmap bm = getSmallBitmap(context, resId, width, height);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.JPEG, 100, out);
+        return out;
+    }
+
+    //把bitmap转换成String
+    public static String bitmapToString(String filePath, int width, int height) {
+        ByteArrayOutputStream out = bitmapToStream(filePath, width, height);
+        byte[] b = out.toByteArray();
+        return Base64.encodeToString(b, 0, b.length, Base64.DEFAULT);
     }
 
     public static String bitmapToString(String filePath) {
@@ -84,40 +90,34 @@ public class BitmapUtil {
     }
 
     public static String bitmapToString(Context context, int resId, int width, int height) {
-        ByteArrayOutputStream baos = bitmapToStream(context, resId, width, height);
-        byte[] b = baos.toByteArray();
+        ByteArrayOutputStream out = bitmapToStream(context, resId, width, height);
+        byte[] b = out.toByteArray();
         return Base64.encodeToString(b, 0, b.length, Base64.DEFAULT);
     }
 
-    public static ByteArrayOutputStream bitmapToStream(Context context, int resId, int width, int height) {
-        Bitmap bm = getSmallBitmap(context, resId, width, height);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bm.compress(Bitmap.CompressFormat.JPEG, 40, baos);
-        return baos;
-    }
-
-    public static byte[] bitmapToByte(Bitmap bm) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bm.compress(Bitmap.CompressFormat.PNG, 100, baos);
-        return baos.toByteArray();
-    }
-
     public static byte[] bitmapToByte(Bitmap bm,int percent) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bm.compress(Bitmap.CompressFormat.JPEG, percent, baos);
-        return baos.toByteArray();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.JPEG, percent, out);
+        return out.toByteArray();
     }
 
     public static byte[] bitmapToByte(Context context, int resId, int width, int height) {
         Bitmap bm = getSmallBitmap(context, resId, width, height);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bm.compress(Bitmap.CompressFormat.PNG, 100, baos);
-        return baos.toByteArray();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.JPEG, 100, out);
+        return out.toByteArray();
     }
 
-    public static File bitmapToFile(Bitmap bitmap, String path) {
+    public static byte[] bitmapToByte(File file, int width, int height,int percent) {
+        Bitmap bitmap = getSmallBitmap(file.getAbsolutePath(), width, height);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, percent, out);
+        return out.toByteArray();
+    }
+
+    public static File bitmapToFile(Bitmap bitmap, String path,int percent) {
         File saveFile = new File(path);
-        if (saveFile.exists()) {
+        if (saveFile.exists() && saveFile.length() > 0) {
             return saveFile;
         }
         OutputStream out = null;
@@ -126,53 +126,17 @@ public class BitmapUtil {
         } catch (FileNotFoundException e) {
         }
         if (out != null) {
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 30, out);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, percent, out);
         }
         return saveFile;
     }
 
-    public static byte[] bitmapToByte(File file, int width, int height) {
-        Bitmap bitmap = decodeBitmap(file.getAbsolutePath(), width, height);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-        return baos.toByteArray();
-    }
-
-    public static byte[] bitmapToByte(File file, int width, int height,int percent) {
-        Bitmap bitmap = decodeBitmap(file.getAbsolutePath(), width, height);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, percent, baos);
-        return baos.toByteArray();
-    }
-
-    public static Bitmap decodeBitmap(Context context, int resId, int width, int height) {
-        Bitmap bm = getSmallBitmap(context, resId, width, height);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bm.compress(Bitmap.CompressFormat.JPEG, 80, baos);
-        Bitmap bitmap = BitmapFactory.decodeByteArray(baos.toByteArray(), 0, baos.size());
-        return bitmap;
-    }
-
-    public static Bitmap decodeBitmap(String pathName, int width, int height) {
-        Bitmap bm = getSmallBitmap(pathName, width, height);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bm.compress(Bitmap.CompressFormat.JPEG, 80, baos);
-        Bitmap bitmap = BitmapFactory.decodeByteArray(baos.toByteArray(), 0, baos.size());
-        return bitmap;
-    }
-
-    public static Bitmap scaleImageView(Bitmap src, float scaleX, float scaleY) {
-        Matrix m = new Matrix();
-        m.postScale(scaleX, scaleY);
-        return Bitmap.createBitmap(src, 0, 0, src.getWidth(), src.getHeight(), m, true);
-    }
-
     //base64字符串转化成图片
-    public static File Base64ToImage(String imgStr, String path) {
+    public static File Base64ToImage(String imgStr, String path,int percent) {
         if (imgStr != null) {
             byte[] bitmapArray = Base64.decode(imgStr, Base64.DEFAULT);
             Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapArray, 0, bitmapArray.length);
-            return bitmapToFile(bitmap, path);
+            return bitmapToFile(bitmap, path,percent);
         }
         return null;
     }

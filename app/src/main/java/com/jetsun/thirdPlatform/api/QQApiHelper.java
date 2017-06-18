@@ -3,6 +3,7 @@ package com.jetsun.thirdPlatform.api;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -10,15 +11,20 @@ import android.text.TextUtils;
 
 import com.jetsun.thirdPlatform.Platform;
 import com.jetsun.thirdPlatform.event.OnAuthListener;
+import com.jetsun.thirdPlatform.event.OnShareListener;
 import com.jetsun.thirdPlatform.event.OnUserInfoListener;
 import com.jetsun.thirdPlatform.model.AuthResult;
 import com.jetsun.thirdPlatform.model.UserInfo;
 import com.jetsun.thirdPlatform.net.RspHandler;
 import com.jetsun.thirdPlatform.parser.authResult.QQAuthParser;
 import com.jetsun.thirdPlatform.parser.userInfo.QQUserInfoParser;
+import com.tencent.connect.share.QQShare;
+import com.tencent.connect.share.QzoneShare;
 import com.tencent.tauth.IUiListener;
 import com.tencent.tauth.Tencent;
 import com.tencent.tauth.UiError;
+
+import java.util.ArrayList;
 
 /**
  * QQ:  http://wiki.open.qq.com/wiki/mobile/SDK%E4%B8%8B%E8%BD%BD
@@ -179,16 +185,81 @@ class QQApiHelper implements PlatformApi {
 
             @Override
             public void onCancel() {
-                if (authListener != null) {
-                    authListener.onAuthError(Platform.QQ);
+
+            }
+        };
+    }
+
+    private void share(@Nullable Activity act,@Nullable Fragment f, int type, String title,
+                       String desc, String imageUrl, String webUrl,
+                       @Nullable OnShareListener shareListener) {
+        Activity a = act != null ? act : (f != null ? f.getActivity() : null);
+        if (a == null || a.isFinishing()) {
+            return;
+        }
+
+        if (!tencent.isSupportSSOLogin(a)) {
+            return;
+        }
+
+        switch (type) {
+            case Platform.QQ:{
+                final Bundle params = new Bundle();
+                params.putInt(QQShare.SHARE_TO_QQ_KEY_TYPE, QQShare.SHARE_TO_QQ_TYPE_DEFAULT);
+                params.putString(QQShare.SHARE_TO_QQ_TITLE, title);
+                params.putString(QQShare.SHARE_TO_QQ_SUMMARY, desc);
+                params.putString(QQShare.SHARE_TO_QQ_TARGET_URL,webUrl);
+                params.putString(QQShare.SHARE_TO_QQ_IMAGE_URL,imageUrl);
+                tencent.shareToQQ(a, params, dispatchShareListener(type, shareListener));
+            }
+
+            case Platform.QZONE:{
+                final Bundle params = new Bundle();
+                params.putInt(QzoneShare.SHARE_TO_QZONE_KEY_TYPE,QzoneShare.SHARE_TO_QZONE_TYPE_IMAGE_TEXT);
+                params.putString(QzoneShare.SHARE_TO_QQ_TITLE, title);//必填
+                params.putString(QzoneShare.SHARE_TO_QQ_SUMMARY, desc);//选填
+                params.putString(QzoneShare.SHARE_TO_QQ_TARGET_URL,webUrl);//必填
+                ArrayList<String> imageUrls = new ArrayList<>();
+                imageUrls.add(imageUrl);
+                params.putStringArrayList(QzoneShare.SHARE_TO_QQ_IMAGE_URL, imageUrls);
+                tencent.shareToQzone(a, params, dispatchShareListener(type, shareListener));
+                break;
+            }
+        }
+    }
+
+    private IUiListener dispatchShareListener(final int type,@Nullable final OnShareListener shareListener){
+        return new IUiListener() {
+            @Override
+            public void onComplete(Object o) {
+                if (shareListener != null ) {
+                    shareListener.onShareSuccess(type);
                 }
+            }
+
+            @Override
+            public void onError(UiError uiError) {
+                if (shareListener != null) {
+                    shareListener.onShareError(type);
+                }
+            }
+
+            @Override
+            public void onCancel() {
+
             }
         };
     }
 
     @Override
-    public void share(Context context, int type, String title, String desc, String imageUrl,
-                      String webUrl) {
+    public void share(@NonNull Activity act, int type, String title, String desc, String imageUrl,
+                      String webUrl, @Nullable OnShareListener onShareListener) {
+        share(act, null,type, title, desc, imageUrl, webUrl, onShareListener);
+    }
 
+    @Override
+    public void share(@NonNull Fragment f, int type, String title, String desc, String imageUrl,
+                      String webUrl, @Nullable OnShareListener onShareListener) {
+        share(null, f,type, title, desc, imageUrl, webUrl, onShareListener);
     }
 }

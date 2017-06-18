@@ -2,6 +2,7 @@ package com.jetsun.thirdPlatform.net;
 
 import android.content.Context;
 
+import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,7 +45,13 @@ public class SimpleHttpClient {
 
     public void downloadImage(Context context,String url,RspHandler handler) {
         ReqDownload reqPost = new ReqDownload();
-        AsyncHttpRequest request = new AsyncHttpRequest(context,reqPost, url, null, handler);
-        executorService.submit(request);
+        File file = HttpUtils.getCacheImage(context,url);
+        if (file != null && file.exists() && file.length() > 0) {
+            handler.onSuccess(file.getAbsolutePath());
+
+        }else{
+            AsyncHttpRequest request = new AsyncHttpRequest(context, reqPost, url, null, handler);
+            executorService.submit(request);
+        }
     }
 }
