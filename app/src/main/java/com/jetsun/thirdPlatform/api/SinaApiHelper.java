@@ -227,11 +227,11 @@ class SinaApiHelper implements PlatformApi {
         }
 
         this.shareListener = onShareListener;
-        shareHandler = new WbShareHandler(act);
+        shareHandler = new WbShareHandler(a);
         shareHandler.registerApp();
 
         final WeiboMultiMessage multiMessage = new WeiboMultiMessage();
-        SimpleHttpClient.getInstance().downloadImage(act, imageUrl, new RspHandler() {
+        SimpleHttpClient.getInstance().downloadImage(a, imageUrl, new RspHandler() {
             @Override
             public void onSuccess(String path) {
                 WebpageObject webpageObject = new WebpageObject();

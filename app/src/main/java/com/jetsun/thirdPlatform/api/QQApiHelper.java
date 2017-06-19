@@ -211,6 +211,7 @@ class QQApiHelper implements PlatformApi {
                 params.putString(QQShare.SHARE_TO_QQ_TARGET_URL,webUrl);
                 params.putString(QQShare.SHARE_TO_QQ_IMAGE_URL,imageUrl);
                 tencent.shareToQQ(a, params, dispatchShareListener(type, shareListener));
+                break;
             }
 
             case Platform.QZONE:{

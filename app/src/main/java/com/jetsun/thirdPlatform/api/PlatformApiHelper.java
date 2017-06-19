@@ -92,4 +92,31 @@ public class PlatformApiHelper {
             }
         }
     }
+
+    public void share(@NonNull Fragment f, @PlatformManager.ShareType int shareType, String title,
+                      String desc, String imageUrl, String webUrl,
+                      @Nullable OnShareListener onShareListener) {
+        switch (shareType) {
+            case Platform.WX:
+            case Platform.WX_CIRCLE:
+            case Platform.WX_COLLECT: {
+                getPlatform(Platform.WX).share(f, shareType, title, desc, imageUrl, webUrl,
+                        onShareListener);
+                break;
+            }
+
+            case Platform.QQ:
+            case Platform.QZONE: {
+                getPlatform(Platform.QQ).share(f, shareType, title, desc, imageUrl, webUrl,
+                        onShareListener);
+                break;
+            }
+
+            case Platform.SINA:{
+                getPlatform(Platform.SINA).share(f, shareType, title, desc, imageUrl, webUrl,
+                        onShareListener);
+                break;
+            }
+        }
+    }
 }
