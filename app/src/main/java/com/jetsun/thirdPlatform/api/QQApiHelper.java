@@ -185,7 +185,9 @@ class QQApiHelper implements PlatformApi {
 
             @Override
             public void onCancel() {
-
+                if (authListener != null) {
+                    authListener.onAuthError(Platform.QQ);
+                }
             }
         };
     }
@@ -247,7 +249,9 @@ class QQApiHelper implements PlatformApi {
 
             @Override
             public void onCancel() {
-
+                if (shareListener != null) {
+                    shareListener.onShareError(type);
+                }
             }
         };
     }

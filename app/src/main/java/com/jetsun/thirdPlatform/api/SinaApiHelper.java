@@ -118,7 +118,9 @@ class SinaApiHelper implements PlatformApi {
 
                 @Override
                 public void onWbShareCancel() {
-
+                    if (shareListener != null) {
+                        shareListener.onShareError(Platform.SINA);
+                    }
                 }
 
                 @Override
