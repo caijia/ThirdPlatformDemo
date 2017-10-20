@@ -2,8 +2,8 @@ package com.jetsun;
 
 import android.app.Application;
 
-import com.jetsun.thirdPlatform.Platform;
-import com.jetsun.thirdPlatform.api.PlatformManager;
+import com.caijia.social.Platform;
+import com.caijia.social.api.PlatformManager;
 import com.squareup.leakcanary.LeakCanary;
 
 /**

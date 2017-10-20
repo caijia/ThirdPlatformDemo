@@ -7,13 +7,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.jetsun.thirdPlatform.Platform;
-import com.jetsun.thirdPlatform.api.PlatformApiHelper;
-import com.jetsun.thirdPlatform.api.PlatformManager;
-import com.jetsun.thirdPlatform.event.OnShareListener;
-import com.jetsun.thirdPlatform.event.OnUserInfoListener;
-import com.jetsun.thirdPlatform.model.AuthResult;
-import com.jetsun.thirdPlatform.model.UserInfo;
+import com.caijia.social.Platform;
+import com.caijia.social.api.PlatformApiHelper;
+import com.caijia.social.api.PlatformManager;
+import com.caijia.social.event.OnShareListener;
+import com.caijia.social.event.OnUserInfoListener;
+import com.caijia.social.model.AuthResult;
+import com.caijia.social.model.UserInfo;
 
 /**
  * 微信：https://open.weixin.qq.com/cgi-bin/showdocument?action=dir_list&t=resource/res_list&verify=1&id=1417751808&token=&lang=zh_CN
