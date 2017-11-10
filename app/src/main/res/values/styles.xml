@@ -1,11 +1,49 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
+
+    <!-- 底部dialog进出动画 -->
+    <style name="BottomDialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/music_play_dialog_in</item>
+        <item name="android:windowExitAnimation">@anim/music_play_dialog_out</item>
+    </style>
+
+    <style name="BottomSheetStyle" parent="@style/Dialog_full">
+        <item name="android:windowAnimationStyle">@style/BottomDialogAnimation</item>
+    </style>
+
+    <!--宽度和屏幕一致dialog-->
+    <style name="Dialog_full">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowFrame">@null</item>            <!--是否有边框-->
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>         <!--是否浮现在activity之上-->
+        <item name="android:windowIsTranslucent">true</item>       <!--是否半透明-->
+        <item name="android:windowContentOverlay">@null</item>      <!--是否有遮盖-->
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:backgroundDimEnabled">true</item>        <!--背景是否模糊显示-->
+    </style>
+
+    <style name="fade" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/music_play_dialog_in</item>
+        <item name="android:activityOpenExitAnimation">@anim/music_play_dialog_out</item>
+        <item name="android:activityCloseEnterAnimation">@anim/music_play_dialog_in</item>
+        <item name="android:activityCloseExitAnimation">@anim/music_play_dialog_out</item>
+    </style>
+
+    <style name="MyDialogActivityTheme" parent="AppTheme">
+        <item name="colorPrimaryDark">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>       <!--是否半透明-->
+        <item name="android:windowContentOverlay">@null</item>      <!--是否有遮盖-->
+        <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 
 </resources>

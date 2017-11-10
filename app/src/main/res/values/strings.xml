@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">ThirdPlatformDemo</string>
+    <string name="qq">QQ</string>
+    <string name="wx">微信</string>
+    <string name="friend_circle">朋友圈</string>
+    <string name="qq_zone">QQ空间</string>
+    <string name="music_like_song">歌曲</string>
 </resources>

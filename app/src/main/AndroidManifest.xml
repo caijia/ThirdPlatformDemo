@@ -24,6 +24,9 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".ShareDialog"
+            android:theme="@style/MyDialogActivityTheme"/>
+
         <!--微信配置 start-->
         <activity
             android:name=".wxapi.WXEntryActivity"
